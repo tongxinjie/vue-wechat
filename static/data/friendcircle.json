@@ -1,0 +1,20 @@
+{
+
+    "content":[
+        {"name":"Doggy","img": "../../../static/头像库/dog.jpg",
+            "content": "I love HotDog!","time":"14:30","num": "3","album":[""]},
+        {"name":"Angrybird","img": "../../../static/头像库/bird.jpg",
+            "content": "Such a bad weather!","time":"13:10","num": "10","album":["../../../static/朋友圈/bird.jpg"]},
+        {"name":"Mickey","img": "../../../static/头像库/mickey.jpg",
+            "content": "Let's go to the party!","time":"13:10","num": "11","album":["../../../static/朋友圈/mickey.jpg"]},
+            {"name":"Winnie","img": "../../../static/头像库/winnie.jpg",
+                "content": "Honey~Honey~","time":"13:10","num": "18","album":[""]},
+            {"name":"Piggy","img": "../../../static/头像库/pig.jpg",
+            "content": "Have a nice day~","time":"13:10","num": "14","album":["../../../static/朋友圈/pig.jpg"]},
+            {"name":"Jerry","img": "../../../static/头像库/jerry.jpg",
+                "content": "I love cheeeeeese","time":"13:10","num": "14","album":[""]},
+                {"name":"Tom","img": "../../../static/头像库/tom.jpg",
+                    "content": "I am so hungry! Where is Jerry?","time":"12:30","num": "14","album":[""]}
+    ]
+
+}
