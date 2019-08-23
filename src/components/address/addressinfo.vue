@@ -23,7 +23,7 @@
           </div>
         </div>
           <div class='moreinfo'>
-          <span>标签</span>
+          <span>设置备注和标签</span>
           <div>
            <img
             src="../../assets/enter.png"
@@ -90,19 +90,28 @@ export default {
     }
   },
 
-  beforeRouteEnter (to, from, next) {
-    next(vm => vm.setData())
-  },
+  // beforeRouteEnter (to, from, next) {
+  //   next(vm => vm.setData())
+  // },
   created () {
     console.log('created.')
+    // console.log(this.$route.query.pinfo.id)
+    if (this.$route.query.pinfo.id) {
+      this.$store.commit('friendinfo', this.$route.query.pinfo)
+    }
+    this.name = this.$store.state.friendname
+    this.id = this.$store.state.friendid
+    this.img = this.$store.state.friendimg
+    this.loc = this.$store.state.friendloc
   },
 
   methods: {
     setData () {
-      this.name = this.$route.query.pinfo.loginName
-      this.id = this.$route.query.pinfo.wechatId
-      this.img = '../../../static/uploads/' + this.$route.query.pinfo.avatar
-      this.loc = this.$route.query.pinfo.location
+      this.$store.commit('friendinfo', this.$route.query.pinfo)
+      this.name = this.$store.state.friendname
+      this.id = this.$store.state.friendid
+      this.img = this.$store.state.friendimg
+      this.loc = this.$store.state.friendloc
     },
     toChatroom () {
       this.$router.push({path: '/chatroom', query: {userinfo: this.$route.query.pinfo}})

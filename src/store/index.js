@@ -12,10 +12,21 @@ const store = new Vuex.Store({
     myimg: sessionStorage.getItem('myimg'),
     newMsg: [],
     wsId: '',
-    token: sessionStorage.getItem('token')
+    token: sessionStorage.getItem('token'),
+    // 好友名片信息
+    friendid: '',
+    friendname: '',
+    friendimg: '',
+    friendloc: ''
   },
 
   mutations: {
+    friendinfo: (state, payload) => {
+      state.friendname = payload.loginName
+      state.friendid = payload.wechatId
+      state.friendimg = '../../static/uploads/' + payload.avatar
+      state.friendloc = payload.location
+    },
     changeLogin: (state, payload) => {
       console.log('store', payload)
       state.token = payload

@@ -120,7 +120,7 @@
           <div v-show="addGif" class="bottompop">
             <div class="send">
               <img src="../../assets/语音切换.png" class="convert"/>
-              <input type="text" class="csText" ref="sTest1" @keyup.enter="Sendmessage">
+              <input type="text" class="csText" ref="sTest2" @keyup.enter="Sendmessage">
              <img src="../../assets/表情1.png" class="smile" @click="addGifImg"/>
              <img src="../../assets/添加.png" class="addnew" @click="addPic"/>
             </div>
@@ -170,7 +170,7 @@ export default {
         },
         {
           imgpath: '../../../static/表情包/02.gif',
-          title: '打哈欠'
+          title: '加油'
         },
         {
           imgpath: '../../../static/表情包/03.gif',
@@ -333,7 +333,8 @@ export default {
         'api/setUnread'
         , qs.stringify(this.arr[0])
       )
-      this.$router.push({path: '/chat'})
+      this.$router.back()
+      // this.$router.push({path: '/chat'})
 
       // this.websock.close()
     },
@@ -414,6 +415,8 @@ export default {
       if (this.addPicture) {
         // console.log(this.addPicture)
         this.text = this.$refs.sTest1.value
+      } else if (this.addGif) {
+        this.text = this.$refs.sTest2.value
       } else {
         this.text = this.$refs.sTest.value
       }
@@ -439,6 +442,8 @@ export default {
         )
         if (this.addPicture) {
           this.$refs.sTest1.value = ''
+        } else if (this.addGif) {
+          this.$refs.sTest2.value = ''
         } else {
           this.$refs.sTest.value = ''
         }
