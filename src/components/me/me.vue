@@ -149,7 +149,6 @@ export default {
       // this.$store.commit('islogin', false)
       let that = this
       that.global.ws.close()
-      sessionStorage.setItem('token', '')
       this.$store.commit('clean')
       console.log('token:', sessionStorage.getItem('token'))
       console.log('store.state.token', this.$store.state.token)

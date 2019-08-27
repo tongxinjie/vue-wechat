@@ -1,11 +1,30 @@
 <template>
   <div class="chatt">
     <div class="chat-headerr">
-      <img src="../../assets/添加.png" />
+      <img src="../../assets/添加.png" @click="showMore"/>
             <p>微信</p>
-      <input type="text" ref="sTest" placeholder="搜索">
+      <input type="text" ref="sTest" placeholder="搜索" >
       </div>
-          <div v-for="info in Getlist" :key="info.id">
+      <div class="showTop" v-show="showTop">
+        <div class="arrow"></div>
+      <div class="topText">
+        <img class="topIcon" src="../../assets/chat/发起群聊.png" />
+        <span>发起群聊</span>
+      </div>
+      <div class="topText">
+        <img class="topIcon" src="../../assets/chat/添加好友.png" />
+        <span>添加朋友</span>
+      </div>
+      <div class="topText">
+        <img class="topIcon" src="../../assets/chat/扫一扫.png" />
+        <span>扫一扫</span>
+      </div>
+      <div class="topText">
+        <img class="topIcon" src="../../assets/chat/收付款.png" />
+        <span>收付款</span>
+      </div>
+    </div>
+          <div v-for="info in this.$store.state.Fulllist" :key="info.id">
               <!-- <chatblc :blcdata="info"></chatblc> -->
               <!-- 头像 -->
                 <div class='chat-wrapperr'>
@@ -51,24 +70,10 @@ export default {
     },
 
   mounted () {
-    setTimeout(() => {
-      let that = this
-      this.websocket = that.global.ws
-      console.log('get ws in chat page.', that.global.ws)
-      if (this.websocket.readyState === 1) {
-        this.websocket.send(JSON.stringify(this.content))
-      }
-      this.websocket.onmessage = this.websocketonmessage
-    }, 500)
+
   },
 
   created () {
-    this.content.msg = ''
-    this.content.frommsg = ''
-    this.content.tomsg = 'chatlist'
-    this.content.text = ''
-    // console.log('store.state.token', this.$store.state.token)
-
     // 后台请求
     this.info.myid = sessionStorage.getItem('myid')
     axios.post(
@@ -88,7 +93,9 @@ export default {
     // setData () {
 
     // }
-
+    showMore () {
+      this.showTop = !this.showTop
+    },
     Enterroom (info) {
       console.log(info)
       this.arr.push({
@@ -104,23 +111,14 @@ export default {
         .catch((error) => {
           console.log(error)
         })
-      this.$router.push({path: '/chatroom', query: {userinfo: info}})
-    },
-    websocketonmessage (e) {
-      // console.log('chat', e)
-      if (e.data) {
-        this.jsonmsg = JSON.parse(e.data)
-        console.log(this.jsonmsg)
-        for (let i = 0; i < this.Getlist.length; i++) {
-          if (this.jsonmsg.frommsg === this.Getlist[i].wechatId) {
-            this.Getlist[i].unread += 1
-            this.Getlist[i].msg = this.jsonmsg.msg
-            this.Getlist[i].text = parseInt(this.jsonmsg.text)
-            this.Getlist[i].time = this.jsonmsg.time
-          }
-        }
-        // console.log(this.newMsg)
-      }
+      this.$router.push({path: '/chatroom',
+        query: {
+          friendheader: info.avatar,
+          friendname: info.loginName,
+          friendid: info.wechatId,
+          friendloc: info.location,
+          frompath: '/chat'
+        }})
     },
     setDatalist (res) {
       // console.log(res.data)
@@ -135,6 +133,7 @@ export default {
           text: res[i].text
         })
       }
+      this.$store.commit('setGetlist', this.Getlist)
     }
 
   },
@@ -154,7 +153,8 @@ export default {
       content: {msg: '', frommsg: '', tomsg: '', text: 0},
       jsonInfo: {},
       arr: [],
-      newMsg: []
+      newMsg: [],
+      showTop: false
 
     }
   }
@@ -182,7 +182,7 @@ export default {
   height:100px;
   width: 100%;
   background-color:  rgba(233,233,234,1);
-  z-index:999;
+  z-index:99;
 
  }
 
@@ -220,13 +220,12 @@ export default {
     height: 100%;
     overflow: hidden;
     top: 100px;
-    /* z-index: 1; */
 
   }
 
   .itemm{
     width: 100%;
-    margin-left: 0;
+    // margin-left: 0;
   }
 
  .itemm-img{
@@ -241,9 +240,13 @@ export default {
   }
   .msgg{
     font-size: 14px;
-    padding-top: 13px;
+    padding-top: 12px;
     padding-left: 80px;
+    padding-right: 50px;
     color: rgba(153,153,153,0.8);
+    // overflow: hidden;
+    // white-space: nowrap;
+    // text-overflow: ellipsis;
   }
   .itemm-time{
     position: absolute;
@@ -275,5 +278,42 @@ export default {
     vertical-align: middle;
     background-color: red;
     border-radius: 50%;
+  }
+
+  .showTop{
+    position: fixed;
+    top: 50px;
+    right: 8px;
+    width: 150px;
+    background-color: rgb(63, 63, 63);
+    border-radius: 6px;
+    z-index: 100;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.76);
+  }
+
+  .arrow{
+position:absolute;
+top:-15px;
+right:11px; /* 圆角的位置需要细心调试哦 */
+width:0;
+height:0;
+font-size:0;
+border-right: 8px solid transparent;
+border-bottom: 8px solid rgba(63,63,63);
+border-left: 8px solid transparent;
+border-top: 8px solid transparent;
+  }
+  .topIcon{
+    margin-right: 20px;
+    height: 20px;
+    width: 20px;
+  }
+  .topText{
+    width: 100%;
+    display: flex;
+    padding: 10px 18px;
+    align-items: center;
+    border-bottom: 0.01mm solid #ffffff;
   }
 </style>

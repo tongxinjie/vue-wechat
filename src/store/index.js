@@ -11,22 +11,59 @@ const store = new Vuex.Store({
     myid: sessionStorage.getItem('myid'),
     myimg: sessionStorage.getItem('myimg'),
     newMsg: [],
-    wsId: '',
+    Fulllist: [],
     token: sessionStorage.getItem('token'),
-    // 好友名片信息
-    friendid: '',
-    friendname: '',
-    friendimg: '',
-    friendloc: ''
+    showToast: ''
+
   },
 
   mutations: {
-    friendinfo: (state, payload) => {
-      state.friendname = payload.loginName
-      state.friendid = payload.wechatId
-      state.friendimg = '../../static/uploads/' + payload.avatar
-      state.friendloc = payload.location
+
+    showToast: (state) => {
+      state.showToast = 1
     },
+
+    unshowToast: (state) => {
+      state.showToast = ''
+    },
+
+    setMsgToast: (state, data) => {
+      console.log('res', data.res)
+      console.log('a', data.a)
+      state.newMsg.push({
+        fromname: data.res.data.fromname,
+        avatar: data.res.data.avatar,
+        msg: data.a.msg,
+        time: data.a.time,
+        text: parseInt(data.a.text),
+        fromid: data.a.frommsg
+      })
+    },
+
+    cleanMsgToast: (state) => {
+      state.newMsg = []
+    },
+
+    setNewmsg: (state, payload) => {
+      console.log('payload', payload.fromid)
+      console.log(state.Fulllist)
+      for (let i = 0; i < state.Fulllist.length; i++) {
+        console.log('state.newMsg.fromid', payload.fromid)
+        if (payload.fromid === state.Fulllist[i].wechatId) {
+          console.log('haha--------')
+          state.Fulllist[i].unread += 1
+          state.Fulllist[i].msg = payload.msg
+          state.Fulllist[i].text = parseInt(payload.text)
+          state.Fulllist[i].time = payload.time
+        }
+      }
+      console.log('2:', state.Fulllist)
+    },
+
+    setGetlist: (state, payload) => {
+      state.Fulllist = payload
+    },
+
     changeLogin: (state, payload) => {
       console.log('store', payload)
       state.token = payload
@@ -44,13 +81,9 @@ const store = new Vuex.Store({
       sessionStorage.setItem('token', '')
     },
 
-    del_token: (state) => {
-      state.token = ''
-      sessionStorage.setItem('token', '')
-    },
-
     init: (state, res) => {
       state.token = res.token
+      state.myid = res.wechatid
       sessionStorage.setItem('token', res.token)
       sessionStorage.setItem('myname', res.username)
       sessionStorage.setItem('myid', res.wechatid)

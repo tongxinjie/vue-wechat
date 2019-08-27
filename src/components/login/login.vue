@@ -78,7 +78,7 @@ export default {
   beforeDestroy () {
     // ---------定义全局的websocket-----------
     console.log('destroy login')
-    this.initWebSocket()
+    // this.initWebSocket()
   },
   methods: {
     // setData () {
@@ -116,9 +116,7 @@ export default {
             console.log('login-data:', res.data)
             this.tologin(res.data)
           })
-        // console.log('info', this.name)
       } else {
-        // console.log('info', this.name)
         this.showPositionValue = true
         this.toastText = '输入不能为空！'
       }
@@ -137,7 +135,6 @@ export default {
       if (res.token) {
         this.isLogging = true
         this.setimg = this.imgpath
-        // this.$store.commit('islogin', true)
         this.$store.commit('init', res)
         setTimeout(() => {
           this.$router.push({path: '/chat'})
@@ -231,10 +228,6 @@ export default {
 }
 
 .log-btn{
-    // display: -webkit-flex;
-    // display: flex;
-    // -webkit-align-items: center;
-    // align-items: center;
     -webkit-appearance:none;
     width: 170px;
     height: 30px;

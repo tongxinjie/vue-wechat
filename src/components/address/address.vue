@@ -10,31 +10,6 @@
       <input type="text" ref="sTest" placeholder="搜索">
       </div>
     <div class="content">
-<!--
-                <div>
-                  <ul>
-                     <li>
-                 <div class="new-friend">
-               <img src="../../assets/通讯录/新的朋友.png"/>
-                <span>新的朋友</span>
-                </div>
-                 <div class="new-friend">
-               <img src="../../assets/通讯录/群聊.png" height="40" width="40" />
-                <span >群聊</span>
-        </div>
-              <div class="new-friend">
-               <img src="../../assets/通讯录/标签.png" height="40" width="40" />
-                <span >标签</span>
-        </div>
-              <div class="new-friend">
-               <img  src="../../assets/通讯录/公众号.png" height="40" width="40" />
-                <span >公众号
-                </span>
-        </div>
-                </li>
-                  </ul>
-
-                </div> -->
 
       <div class="right" ref="right">
         <ul>
@@ -156,7 +131,13 @@ export default {
   },
   methods: {
     gotoUser: function (info) {
-      this.$router.push({path: '/addressinfo', query: {pinfo: info}})
+      this.$router.push({path: '/addressinfo',
+        query: {
+          friendheader: info.avatar,
+          friendname: info.loginName,
+          friendid: info.wechatId,
+          friendloc: info.location
+        }})
     },
     _initScroll () {
       // better-scroll的实现原理是监听了touchStart,touchend事件，所以阻止了默认的事件（preventDefault）

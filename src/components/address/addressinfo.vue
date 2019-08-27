@@ -90,31 +90,30 @@ export default {
     }
   },
 
-  // beforeRouteEnter (to, from, next) {
-  //   next(vm => vm.setData())
-  // },
+  beforeRouteEnter (to, from, next) {
+    next(vm => vm.setData())
+  },
   created () {
     console.log('created.')
-    // console.log(this.$route.query.pinfo.id)
-    if (this.$route.query.pinfo.id) {
-      this.$store.commit('friendinfo', this.$route.query.pinfo)
-    }
-    this.name = this.$store.state.friendname
-    this.id = this.$store.state.friendid
-    this.img = this.$store.state.friendimg
-    this.loc = this.$store.state.friendloc
   },
 
   methods: {
     setData () {
-      this.$store.commit('friendinfo', this.$route.query.pinfo)
-      this.name = this.$store.state.friendname
-      this.id = this.$store.state.friendid
-      this.img = this.$store.state.friendimg
-      this.loc = this.$store.state.friendloc
+      // this.$store.commit('friendinfo', this.$route.query.pinfo)
+      // console.log(this.$route.query.pinfo)
+      this.name = this.$route.query.friendname
+      this.id = this.$route.query.friendid
+      this.img = '../../../static/uploads/' + this.$route.query.friendheader
+      this.loc = this.$route.query.friendloc
     },
     toChatroom () {
-      this.$router.push({path: '/chatroom', query: {userinfo: this.$route.query.pinfo}})
+      this.$router.push({path: '/chatroom',
+        query: {
+          friendheader: this.img,
+          friendname: this.name,
+          friendid: this.id,
+          frompath: '/addressinfo',
+          friendloc: this.loc}})
     }
   }
 

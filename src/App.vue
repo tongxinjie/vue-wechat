@@ -1,5 +1,29 @@
 <template>
   <div id="app">
+    <div class="newMsg" v-show="this.$store.state.showToast">
+          <ul>
+            <li v-for="(user,index) in newMsg" :key="index" v-show="index===newMsg.length-1" @click="gotoChatroom(user)">
+              <div class="newMsgTop">
+                <div>
+                <img src="/static/微信.png" height="18" width="18" style="padding-right:10px">
+                <span>微信</span>
+                </div>
+                <span style = "color:gray">现在</span>
+              </div>
+              <div class="newMsgContent">
+                <div style="font-size:14px">
+                  <p>{{user.fromname}}</p>
+                  <span  v-show="user.text">{{user.msg}}</span>
+                  <span  v-show="!user.text">[图片]</span>
+                  <div class="restinfo">
+                  <span v-if="newMsg.length-1!==0">还有{{newMsg.length-1}}个通知</span>
+                  </div>
+                </div>
+                <img :src="'/static/uploads/'+user.avatar" height="30" width="30" style="border-radius:5px">
+              </div>
+            </li>
+          </ul>
+        </div>
        <div>
          <!-- <keep-alive> -->
         <router-view v-if = "isRouterAlive"></router-view>
@@ -10,16 +34,20 @@
 
 <script>
 import { mapState } from 'vuex'
+import axios from 'axios'
+import qs from 'qs'
+import { setTimeout } from 'timers'
 export default {
   name: 'App',
   provide () {
     return {
-      reload: this.reload
+      reload: this.reload,
+      setGlobalWebsocket: this.setGlobalWebsocket
     }
   },
   data () {
     return {
-      newMsg: [],
+      // newMsg: [],
       imgpath: '',
       myimgPath: '../../../static/uploads/',
       convertlist: [],
@@ -31,7 +59,20 @@ export default {
   },
   watch: {
   },
+
   methods: {
+
+    gotoChatroom (user) {
+      console.log(user)
+      this.$router.push({path: '/chatroom',
+        query: {
+          friendname: user.fromname,
+          friendid: user.fromid,
+          friendheader: user.avatar,
+          frompath: '/chat'
+        }})
+      // this.$store.commit('unshowToast')
+    },
 
     reload () {
       this.isRouterAlive = false
@@ -42,122 +83,90 @@ export default {
       )
     },
 
+    setGlobalWebsocket () {
+      setTimeout(() => {
+        let that = this
+        console.log('get ws in app.', that.global.ws)
+        that.global.ws.onmessage = that.websockonmessage
+      }, 400)
+    },
+
     initWebSocket: function () {
       let that = this
-      that.websock = new WebSocket('ws://localhost:8069/websocket/' + sessionStorage.getItem('myid'))
-      that.websock.onopen = that.websocketonopen
-      that.websock.onerror = that.websocketonerror
-      // that.websock.onmessage = that.websocketonmessage
-      that.websock.onclose = that.websocketclose
-      window.onbeforeunload = that.onbeforeunload
-      that.global.setWs(that.websock)
-      console.log('app.vue:', that.websock)
-    },
-    websocketonopen: function () {
-      console.log('WebSocket连接成功~~~')
-    },
-    websocketonerror: function (e) {
-      console.log('WebSocket连接发生错误')
-    },
-
-    websocketonmessage: function (e) {
-      if (e.data !== '') {
-        console.log('event-data', e.data)
-        this.jsonmsg = JSON.parse(e.data)
-        // console.log('onmessage:', this.jsonmsg.text)
-        if (this.jsonmsg.text) {
-          console.log('onmessage:', sessionStorage.getItem('myid'))
-          if (this.jsonmsg.frommsg !== sessionStorage.getItem('myid')) {
-            this.newMsg.push({
-              label: false,
-              msg: this.jsonmsg.msg,
-              text: 1
-            })
-          } else {
-            this.newMsg.push({
-              label: true,
-              msg: this.jsonmsg.msg,
-              text: 1
-            })
-          }
-        } else {
-          if (this.jsonmsg.frommsg !== sessionStorage.getItem('myid')) {
-            this.newMsg.push({
-              label: false,
-              msg: this.jsonmsg.msg,
-              text: 0
-            })
-          } else {
-            this.newMsg.push({
-              label: true,
-              msg: this.jsonmsg.msg,
-              text: 0
-            })
-          }
+      if (this.$store.state.token) {
+        that.websock = new WebSocket('ws://localhost:8069/websocket/' + this.$store.state.myid)
+        that.global.setWs(that.websock)
+        that.websock.onopen = function () {
+          console.log('WebSocket连接成功，状态码：' + that.websock.readyState)
         }
-        console.log(this.newMsg)
+        // that.websock.onerror = this.websocketonerror
+        that.websock.onclose = function () {
+          console.log('连接已关闭...')
+          setTimeout(() => {
+            that.initWebSocket()
+          }, 1000)
+        }
+        // that.websock.onmessage = function (e) {
+        //   console.log('app-event-data', e.data)
+        // }
+        that.websock.onclose = function (e) {
+          console.log('websocket连接关闭')
+        }
+        // window.onbeforeunload = this.onbeforeunload
+
+        // console.log('app.vue:', that.websock)
+      } else {
+        console.log('无用户登录')
+        setTimeout(() => {
+          that.initWebSocket()
+        }, 2000)
       }
     },
-    // websocketonmessage: function (e) {
-    //   if (e.data !== '') {
-    //     console.log('event-data', e.data)
-    //     this.jsonmsg = JSON.parse(e.data)
-    //     // console.log('onmessage:', this.jsonmsg.text)
-    //     if (this.jsonmsg.text) {
-    //       console.log('onmessage:', sessionStorage.getItem('myid'))
-    //       if (this.jsonmsg.frommsg !== sessionStorage.getItem('myid')) {
-    //         this.newMsg.push({
-    //           label: false,
-    //           msg: this.jsonmsg.msg,
-    //           text: 1
-    //         })
-    //       } else {
-    //         this.newMsg.push({
-    //           label: true,
-    //           msg: this.jsonmsg.msg,
-    //           text: 1
-    //         })
-    //       }
-    //     } else {
-    //       if (this.jsonmsg.frommsg !== sessionStorage.getItem('myid')) {
-    //         this.newMsg.push({
-    //           label: false,
-    //           msg: this.jsonmsg.msg,
-    //           text: 0
-    //         })
-    //       } else {
-    //         this.newMsg.push({
-    //           label: true,
-    //           msg: this.jsonmsg.msg,
-    //           text: 0
-    //         })
-    //       }
-    //     }
-    //     console.log(this.newMsg)
-    //     this.$store.commit('getNewMsg', this.newMsg)
-    //   }
-    //   // this.msg_data.unshift(da)
-    // },
-    websocketclose: function (e) {
-      console.log('websocket连接关闭')
-    },
-    onbeforeunload () {
-      this.websocketclose()
-    },
+    websockonmessage (e) {
+      console.log('app-onmessage')
+      var a = JSON.parse(e.data)
+      console.log('app', a)
+      axios.post('/api/MsgFrom', qs.stringify({fromid: a.frommsg}))
+        .then((res) => {
+          console.log(res)
+          this.$store.commit('setMsgToast', {res, a})
+          // this.newMsg.push({
 
-    websocketsend (Data) { // 数据发送
-      this.websock.send(Data)
+          //   fromname: res.data.fromname,
+          //   avatar: res.data.avatar,
+          //   msg: a.msg,
+          //   time: a.time,
+          //   text: parseInt(a.text),
+          //   fromid: a.frommsg
+          // })
+          this.jsonmsg.fromid = a.frommsg
+          this.jsonmsg.msg = a.msg
+          this.jsonmsg.time = a.time
+          this.jsonmsg.text = parseInt(a.text)
+          // this.jsonmsg.avatar = a.avatar
+          this.$store.commit('showToast')
+          // this.showToast = 1
+          if (this.$store.state.showToast) {
+            setTimeout(() => {
+              this.$store.commit('unshowToast')
+            }, 3000)
+          }
+        })
+
+      console.log('that', this.$store.state.newMsg)
+      setTimeout(() => {
+        this.$store.commit('setNewmsg', this.jsonmsg)
+      }, 405)
     }
-
   },
   created () {
-    if (sessionStorage.getItem('myid')) {
-      // console.log('appid:', this.wsId)
-      this.initWebSocket()
-    }
+    this.initWebSocket()
   },
   computed: {
-    ...mapState(['wsId'])
+    ...mapState(['newMsg'])
+  },
+  mounted () {
+    this.setGlobalWebsocket()
   }
 }
 </script>
@@ -198,17 +207,38 @@ body {
   height: 100%;
 }
 
-    // @import "assets/css/base.css";
-    // @import "assets/css/common.css";
-    // @import "assets/css/wx-header.css";
-    // /*阿里 fonticon*/
+.newMsg{
+  position: fixed;
+  top: 2px;
+  left: 5px;
+  right: 5px;
+  background-color: rgb(250, 250, 250);
+  padding: 10px;
+  border: 1px solid rgba(153,153,153,0.4);
+  border-radius: 10px;
+  z-index: 9999;
+}
+.newMsgTop{
+  display: flex;
+  align-items: center;
+  padding-bottom: 6px;
+  font-size: 13px;
+  justify-content: space-between;
+}
+.newMsgContent{
+  display: flex;
+  justify-content: space-between;
+}
 
-    // @import "assets/css/lib/iconfont.css";
-    // /*过渡效果需要的动画库*/
+.newMsgContent p{
+   font-weight: bold;
+   padding-bottom:8px
+}
 
-    // @import "assets/css/lib/animate.css";
-    // /*weui 样式库 非常适合高仿微信*/
+.restinfo{
+  padding-top:10px;
+  font-size: 12px;
+  color: gray
+}
 
-    // @import "assets/css/lib/weui.min.css";
-      // @import "../../assets/css/wx-nav.css";
 </style>
