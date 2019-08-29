@@ -11,7 +11,7 @@
         <img class="topIcon" src="../../assets/chat/发起群聊.png" />
         <span>发起群聊</span>
       </div>
-      <div class="topText">
+      <div class="topText" @click="gotoAdd">
         <img class="topIcon" src="../../assets/chat/添加好友.png" />
         <span>添加朋友</span>
       </div>
@@ -93,6 +93,13 @@ export default {
     // setData () {
 
     // }
+
+    gotoAdd () {
+      this.$router.push({
+        path: '/addfriend'
+      })
+    },
+
     showMore () {
       this.showTop = !this.showTop
     },

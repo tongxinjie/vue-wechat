@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import chat from '@/components/chat/chat'
 import address from '@/components/address/address'
 import addressinfo from '@/components/address/addressinfo'
+import addFriend from '@/components/address/addFriend'
+import newfriendCard from '@/components/address/newfriendCard'
 import find from '@/components/find/find'
 import friendcircle from '@/components/find/friendcircle'
 import me from '@/components/me/me'
@@ -97,6 +99,18 @@ export default new Router({
       path: '/editheader',
       name: 'editheader',
       component: editheader,
+      meta: {req: true}
+    },
+    {
+      path: '/addFriend',
+      name: 'addFriend',
+      component: addFriend,
+      meta: {req: true}
+    },
+    {
+      path: '/newfriendCard',
+      name: 'newfriendCard',
+      component: newfriendCard,
       meta: {req: true}
     }
   ]

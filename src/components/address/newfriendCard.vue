@@ -1,11 +1,11 @@
 <template>
-  <div class="it">
+<div class="it">
 
     <div class="it-wrapper">
 
       <div>
       <router-link
-        to='/address'
+        to='/addFriend'
         ><img class="about-back"
             src="../../assets/返回2.png"
           />
@@ -58,28 +58,19 @@
 
          <div style="height:10px"></div>
 
-          <div class="tochat" @click="toChatroom">
-             <img src='../../assets/消息.png' height="20" width="20"/>
-             <p>发消息</p>
-          </div>
-          <div class="tochat">
-              <img src='../../assets/视频1.png' height="20" width="20"/>
-            <p>音视频通话</p>
+          <div class="tochat" @click="addfriend">
+             <p>添加到通讯录</p>
           </div>
 
     </div>
-    <!-- <router-view></router-view> -->
-    <!-- <div><tabbar></tabbar></div> -->
   </div>
+
 </template>
 
-<script >
-import tabbar from '../../Tabbar'
+<script>
+import axios from 'axios'
+import qs from 'qs'
 export default {
-  components:
-    {
-      tabbar
-    },
 
   data () {
     return {
@@ -90,37 +81,32 @@ export default {
     }
   },
 
-  beforeRouteEnter (to, from, next) {
-    next(vm => vm.setData())
-  },
   created () {
-    console.log('created.')
+    this.name = this.$route.query.friendname
+    this.id = this.$route.query.friendid
+    this.img = '../../../static/uploads/' + this.$route.query.friendheader
+    this.loc = this.$route.query.friendloc
   },
 
   methods: {
-    setData () {
-      this.name = this.$route.query.friendname
-      this.id = this.$route.query.friendid
-      this.img = '../../../static/uploads/' + this.$route.query.friendheader
-      this.loc = this.$route.query.friendloc
-    },
-    toChatroom () {
-      this.$router.push({path: '/chatroom',
-        query: {
-          friendheader: this.img,
-          friendname: this.name,
-          friendid: this.id,
-          frompath: '/addressinfo',
-          friendloc: this.loc}})
+
+    addfriend () {
+      axios.post(
+        'api/InsertFriend', qs.stringify({searchId: this.id, myid: sessionStorage.getItem('myid')})
+      ).then((res) => {
+        if (res.data === 'ok') {
+          alert('好友添加成功')
+        }
+      })
     }
   }
 
 }
-
 </script>
 
 <style scoped>
-  .it{
+
+ .it{
     position: fixed;
     top: 0px;
     bottom: 0px;

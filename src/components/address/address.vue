@@ -6,7 +6,7 @@
     </div> -->
     <div class="add-header">
         <p class="addtitle">通讯录</p>
-        <img src="../../assets/添加好友.png" />
+        <img src="../../assets/添加好友.png" @click="addFriend"/>
       <input type="text" ref="sTest" placeholder="搜索">
       </div>
     <div class="content">
@@ -130,6 +130,11 @@ export default {
     }
   },
   methods: {
+    addFriend () {
+      this.$router.push({
+        path: '/addfriend'
+      })
+    },
     gotoUser: function (info) {
       this.$router.push({path: '/addressinfo',
         query: {
