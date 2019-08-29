@@ -30,14 +30,30 @@ const store = new Vuex.Store({
     setMsgToast: (state, data) => {
       console.log('res', data.res)
       console.log('a', data.a)
-      state.newMsg.push({
-        fromname: data.res.data.fromname,
-        avatar: data.res.data.avatar,
-        msg: data.a.msg,
-        time: data.a.time,
-        text: parseInt(data.a.text),
-        fromid: data.a.frommsg
-      })
+      if (data.a.isgroup === '0') {
+        state.newMsg.push({
+          fromname: data.res.data.fromname,
+          avatar: data.res.data.avatar,
+          msg: data.a.msg,
+          time: data.a.time,
+          text: parseInt(data.a.text),
+          fromid: data.a.frommsg,
+          isgroup: 0
+          // tomsg:
+        })
+      } else {
+        state.newMsg.push({
+          fromname: data.res.data.fromname,
+          avatar: data.res.data.avatar,
+          msg: data.a.msg,
+          time: data.a.time,
+          text: parseInt(data.a.text),
+          fromid: data.a.frommsg,
+          tomsg: data.a.tomsg,
+          isgroup: 1
+          // groupname: data.a.groupname
+        })
+      }
     },
 
     cleanMsgToast: (state) => {
@@ -45,18 +61,33 @@ const store = new Vuex.Store({
     },
 
     setNewmsg: (state, payload) => {
-      console.log('payload', payload.fromid)
+      console.log('payload', payload)
       console.log(state.Fulllist)
-      for (let i = 0; i < state.Fulllist.length; i++) {
-        console.log('state.newMsg.fromid', payload.fromid)
-        if (payload.fromid === state.Fulllist[i].wechatId) {
-          console.log('haha--------')
-          state.Fulllist[i].unread += 1
-          state.Fulllist[i].msg = payload.msg
-          state.Fulllist[i].text = parseInt(payload.text)
-          state.Fulllist[i].time = payload.time
+      if (!payload.isgroup) {
+        for (let i = 0; i < state.Fulllist.length; i++) {
+          console.log('state.newMsg.fromid', payload.fromid)
+          if (payload.fromid === state.Fulllist[i].wechatId) {
+            console.log('haha--------')
+            state.Fulllist[i].unread += 1
+            state.Fulllist[i].msg = payload.msg
+            state.Fulllist[i].text = parseInt(payload.text)
+            state.Fulllist[i].time = payload.time
+          }
+        }
+      } else {
+        for (let i = 0; i < state.Fulllist.length; i++) {
+          // console.log('state.newMsg.fromid', payload)
+          if (payload.tomsg === state.Fulllist[i].wechatId) {
+            console.log('haha--------')
+            state.Fulllist[i].unread += 1
+            state.Fulllist[i].msg = payload.msg
+            state.Fulllist[i].text = parseInt(payload.text)
+            state.Fulllist[i].time = payload.time
+            state.Fulllist[i].frommsg = payload.fromid
+          }
         }
       }
+
       console.log('2:', state.Fulllist)
     },
 

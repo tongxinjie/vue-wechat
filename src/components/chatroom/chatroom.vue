@@ -9,14 +9,18 @@
             src="../../assets/返回2.png" />
           </div>
 
+          <div class="right" @click="getMore">
+              <img src="../../assets/省略号.png"/>
+          </div>
+
           <div class="content-chat" id = 'chatRecord' @click="unshow">
               <ul v-for="item in convertlist" :key="item.id">
                 <li :class= "item.label ? 'ask' : 'reply'">
                   <div v-if="item.label">
-                   <img :src="imgpath" class="askimg"/>
+                   <img :src="item.img" class="askimg"/>
                   </div>
                   <div v-else>
-                    <img :src="img" class="replyimg"/>
+                    <img :src="item.img" class="replyimg"/>
                   </div>
                   <div v-if="item.text">
                   <div v-show="item.label" class="arrow"></div>
@@ -34,15 +38,14 @@
             </div>
             <div style="height:10px"></div>
             <div>
-
               <div v-show="newMsg">
                 <ul v-for="msg in newMsg" :key= msg.id>
                  <li :class= "msg.label ? 'ask' : 'reply'">
                  <div v-if="msg.label" >
-                   <img :src="imgpath" class="askimg"/>
+                   <img :src="msg.img" class="askimg"/>
                   </div>
                   <div v-else>
-                    <img :src="img" class="replyimg"/>
+                    <img :src="msg.img" class="replyimg"/>
                   </div>
                   <div v-if="msg.text">
                   <div v-show="msg.label" class="arrow"></div>
@@ -208,7 +211,6 @@ export default {
   },
 
   beforeRouteEnter (to, from, next) {
-    // console.log('from', from.path)
     next(vm => vm.setData())
     console.log('before-route-enter')
   },
@@ -237,6 +239,11 @@ export default {
   },
 
   methods: {
+    getMore () {
+
+      // this.$router.push({''})
+
+    },
     getBrow (item) {
       // console.log(index)
       this.getBrowString = item.char
@@ -257,40 +264,66 @@ export default {
       if (e.data !== '') {
         console.log('event-data', e.data)
         this.jsonmsg = JSON.parse(e.data)
-        if (parseInt(this.jsonmsg.text)) {
-          if (this.jsonmsg.tomsg === sessionStorage.getItem('myid') && this.jsonmsg.frommsg === this.$route.query.friendid) {
-            this.newMsg.push({
-              label: false,
-              msg: this.jsonmsg.msg,
-              text: 1,
-              online: this.jsonmsg.online
-            })
-          } else if (this.jsonmsg.frommsg === sessionStorage.getItem('myid') && this.jsonmsg.tomsg === this.$route.query.friendid) {
-            this.newMsg.push({
-              label: true,
-              msg: this.jsonmsg.msg,
-              text: 1,
-              online: this.jsonmsg.online
-            })
+        console.log(this.jsonmsg)
+        if (this.jsonmsg.isgroup !== '1') {
+          if (parseInt(this.jsonmsg.text)) {
+            if (this.jsonmsg.tomsg === sessionStorage.getItem('myid') && this.jsonmsg.frommsg === this.$route.query.friendid) {
+              this.newMsg.push({
+                img: '../../../static/uploads/' + this.jsonmsg.avatar,
+                label: false,
+                msg: this.jsonmsg.msg,
+                text: 1,
+                online: this.jsonmsg.online
+              })
+            } else if (this.jsonmsg.frommsg === sessionStorage.getItem('myid') && this.jsonmsg.tomsg === this.$route.query.friendid) {
+              this.newMsg.push({
+                img: this.imgpath,
+                label: true,
+                msg: this.jsonmsg.msg,
+                text: 1,
+                online: this.jsonmsg.online
+              })
+            }
+          } else {
+            if (this.jsonmsg.tomsg === sessionStorage.getItem('myid') && this.jsonmsg.frommsg === this.$route.query.friendid) {
+              this.newMsg.push({
+                img: '../../../static/uploads/' + this.jsonmsg.avatar,
+                label: false,
+                msg: this.jsonmsg.msg,
+                text: 0,
+                online: this.jsonmsg.online
+              })
+            } else if (this.jsonmsg.frommsg === sessionStorage.getItem('myid') && this.jsonmsg.tomsg === this.$route.query.friendid) {
+              this.newMsg.push({
+                img: this.imgpath,
+                label: true,
+                msg: this.jsonmsg.msg,
+                text: 0,
+                online: this.jsonmsg.online
+              })
+            }
           }
         } else {
-          if (this.jsonmsg.tomsg === sessionStorage.getItem('myid') && this.jsonmsg.frommsg === this.$route.query.friendid) {
+          if (parseInt(this.jsonmsg.text)) {
             this.newMsg.push({
+              img: '../../../static/uploads/' + this.jsonmsg.avatar,
               label: false,
               msg: this.jsonmsg.msg,
-              text: 0,
+              text: 1,
               online: this.jsonmsg.online
             })
-          } else if (this.jsonmsg.frommsg === sessionStorage.getItem('myid') && this.jsonmsg.tomsg === this.$route.query.friendid) {
+          } else {
             this.newMsg.push({
-              label: true,
+              img: '../../../static/uploads/' + this.jsonmsg.avatar,
+              label: false,
               msg: this.jsonmsg.msg,
               text: 0,
               online: this.jsonmsg.online
             })
           }
         }
-        // console.log(this.newMsg)
+
+        console.log('newMsg', this.newMsg)
       }
     },
 
@@ -317,11 +350,13 @@ export default {
           this.content.tomsg = this.$route.query.friendid
           this.content.text = 0
           this.content.online = 1
+          this.content.isgroup = this.$route.query.isgroup
           this.newMsg.push({
             label: true,
             msg: this.chatroomImgurl,
             text: 0,
-            online: 1
+            online: 1,
+            img: this.imgpath
           })
           // ------------- websocket ---------------------------
           this.websocket.send(JSON.stringify(this.content))
@@ -352,10 +387,18 @@ export default {
     },
 
     backToChat () {
-      axios.post(
-        'api/setUnread'
-        , qs.stringify(this.arr[0])
-      )
+      if (!this.$route.query.isgroup) {
+        axios.post(
+          'api/setUnread'
+          , qs.stringify(this.arr[0])
+        )
+      } else {
+        console.log(this.arr[0])
+        axios.post(
+          'api/setGroupUnread'
+          , qs.stringify(this.arr[0])
+        )
+      }
 
       console.log(this.$route.query)
 
@@ -371,47 +414,93 @@ export default {
     },
 
     setData () {
-      this.$store.commit('unshowToast')
-      this.arr.push({
-        wechatid: this.$route.query.friendid,
-        host: sessionStorage.getItem('myid')
+      // 普通聊天
+      console.log(this.$route.query.isgroup)
+      if (!this.$route.query.isgroup || this.$route.query.isgroup === '0') {
+        console.log('1---------------------')
+        this.$store.commit('unshowToast')
+        this.arr.push({
+          wechatid: this.$route.query.friendid,
+          host: sessionStorage.getItem('myid')
 
-      })
-      console.log('arr', this.arr)
-      axios.post(
-        '/api/getHistorylist'
-        , qs.stringify(this.arr[0])
-      )
-        .then((res) => {
-          if (res) {
-            this.jsonInfo = res.data
-            console.log('消息数：', res.data.length)
-            this.wechatname = this.$route.query.friendname
-            this.img = '../../../static/uploads/' + this.$route.query.friendheader
-            // this.time = this.$route.query.time
-            this.msglist = this.jsonInfo
-            for (let i = 0; i < this.msglist.length; i++) {
-              if (this.msglist[i].frommsg !== this.$route.query.friendid) {
-                this.convertlist.push({
-                  label: true,
-                  text: this.msglist[i].text,
-                  msg: this.msglist[i].msg
-                })
-              } else {
-                this.convertlist.push({
-                  label: false,
-                  msg: this.msglist[i].msg,
-                  text: this.msglist[i].text
-                })
+        })
+        console.log('arr', this.arr)
+        axios.post(
+          '/api/getHistorylist'
+          , qs.stringify(this.arr[0])
+        )
+          .then((res) => {
+            if (res) {
+              this.jsonInfo = res.data
+              console.log('消息数：', res.data.length)
+              this.wechatname = this.$route.query.friendname
+              // this.img = '../../../static/uploads/' + this.$route.query.friendheader
+              // this.time = this.$route.query.time
+              this.msglist = this.jsonInfo
+              for (let i = 0; i < this.msglist.length; i++) {
+                if (this.msglist[i].frommsg !== this.$route.query.friendid) {
+                  this.convertlist.push({
+                    img: this.imgpath,
+                    label: true,
+                    text: this.msglist[i].text,
+                    msg: this.msglist[i].msg
+                  })
+                } else {
+                  this.convertlist.push({
+                    img: '../../../static/uploads/' + this.$route.query.friendheader,
+                    label: false,
+                    msg: this.msglist[i].msg,
+                    text: this.msglist[i].text
+                  })
+                }
               }
             }
-          }
 
           // console.log('this.convertlist', this.convertlist)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      } else {
+      // 群聊
+        console.log('2---------------------')
+        this.$store.commit('unshowToast')
+        this.arr.push({
+          wechatid: this.$route.query.friendid,
+          host: sessionStorage.getItem('myid')
         })
-        .catch((error) => {
-          console.log(error)
+
+        axios.post(
+          '/api/getGroupchatlist'
+          , qs.stringify(this.arr[0])
+        ).then((res) => {
+          this.jsonInfo = res.data
+          console.log('群聊消息数：', res.data.length)
+          // this.number =
+          this.wechatname = this.$route.query.friendname
+          console.log('name：', this.wechatname)
+          // this.img = '../../../static/uploads/' + this.$route.query.friendheader
+          // this.time = this.$route.query.time
+          this.msglist = this.jsonInfo
+          for (let i = 0; i < this.msglist.length; i++) {
+            if (this.msglist[i].wechatId !== this.myid) {
+              this.convertlist.push({
+                img: '../../../static/uploads/' + this.msglist[i].avatar,
+                label: false,
+                text: this.msglist[i].text,
+                msg: this.msglist[i].msg
+              })
+            } else {
+              this.convertlist.push({
+                img: this.imgpath,
+                label: true,
+                msg: this.msglist[i].msg,
+                text: this.msglist[i].text
+              })
+            }
+          }
         })
+      }
     },
 
     sendGif (src) {
@@ -421,11 +510,13 @@ export default {
       this.content.tomsg = this.$route.query.friendid
       this.content.text = 0
       this.content.online = 1
+      this.content.isgroup = this.$route.query.isgroup
       this.newMsg.push({
         label: true,
         msg: src,
         text: 0,
-        online: 1
+        online: 1,
+        img: this.imgpath
       })
       // ------------- websocket ---------------------------
       this.websocket.send(JSON.stringify(this.content))
@@ -456,17 +547,24 @@ export default {
       if (this.text === '') {
         alert('输入不能为空')
       } else {
+        console.log(this.$route.query.isgroup)
+        this.content.isgroup = this.$route.query.isgroup
         this.content.msg = this.text
         this.content.frommsg = this.arr[0].host
         this.content.tomsg = this.$route.query.friendid
         this.content.text = 1
         this.content.online = 1
+        // this.content
+        console.log(this.content)
         this.newMsg.push({
           label: true,
           msg: this.text,
           text: 1,
-          online: 1
+          online: 1,
+          img: this.imgpath
+
         })
+        // console.log('this.newMsg', this.newMsg)
         // ------------- websocket ---------------------------
         this.websocket.send(JSON.stringify(this.content))
         // 后台请求
@@ -537,6 +635,15 @@ export default {
     z-index: 1000;
 
  }
+
+ .right img{
+    position: fixed;
+    height: 25px;
+    width: 25px;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+}
 
   .content-top{
     font-size: 14px;

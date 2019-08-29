@@ -32,12 +32,25 @@
                 <ul>
               <div class='itemm-cell' @click='Enterroom(info)'>
                   <div class="img-unread">
+                <div v-if="!info.isgroup">
                 <img class="itemm-img" :src="'../../../static/uploads/'+info.avatar" height="50" width="50" />
+                </div>
+                <div v-if="info.isgroup">
+                <img class="itemm-img" :src="'../../../static/群聊/'+info.avatar" height="50" width="50" />
+                </div>
                 <span v-show="info.unread">{{info.unread}}</span>
               </div>
               <h2 class="wechattname">{{info.loginName}}</h2>
+              <div v-if="!info.isgroup">
                 <p v-show="info.text" class="msgg">{{info.msg}}</p>
                 <p v-show="!info.text" class="msgg">[图片]</p>
+              </div>
+
+              <div v-if="info.isgroup">
+                <p v-show="info.text" class="msgg">{{info.frommsg}}: {{info.msg}}</p>
+                <p v-show="!info.text" class="msgg">{{info.frommsg}}: [图片]</p>
+              </div>
+
               <span class="itemm-time">{{info.time|moment}}</span>
               </div>
               </ul>
@@ -124,7 +137,8 @@ export default {
           friendname: info.loginName,
           friendid: info.wechatId,
           friendloc: info.location,
-          frompath: '/chat'
+          frompath: '/chat',
+          isgroup: info.isgroup
         }})
     },
     setDatalist (res) {
@@ -137,7 +151,9 @@ export default {
           wechatId: res[i].wechatId,
           time: res[i].time,
           msg: res[i].msg,
-          text: res[i].text
+          text: res[i].text,
+          frommsg: res[i].frommsg,
+          isgroup: res[i].isgroup
         })
       }
       this.$store.commit('setGetlist', this.Getlist)

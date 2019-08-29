@@ -12,9 +12,18 @@
               </div>
               <div class="newMsgContent">
                 <div style="font-size:14px">
-                  <p>{{user.fromname}}</p>
-                  <span  v-show="user.text">{{user.msg}}</span>
-                  <span  v-show="!user.text">[图片]</span>
+                  <div v-if="!user.isgroup">
+                    <p >{{user.fromname}}</p>
+                    <span  v-show="user.text">{{user.msg}}</span>
+                    <span  v-show="!user.text">[图片]</span>
+                  </div>
+
+                  <div v-if="user.isgroup">
+                  <p >群聊消息</p>
+                   <span  v-show="user.text">{{user.fromname}}：{{user.msg}}</span>
+                    <span  v-show="!user.text">{{user.fromname}}：[图片]</span>
+                  </div>
+
                   <div class="restinfo">
                   <span v-if="newMsg.length-1!==0">还有{{newMsg.length-1}}个通知</span>
                   </div>
@@ -63,14 +72,33 @@ export default {
   methods: {
 
     gotoChatroom (user) {
-      console.log(user)
-      this.$router.push({path: '/chatroom',
-        query: {
-          friendname: user.fromname,
-          friendid: user.fromid,
-          friendheader: user.avatar,
-          frompath: '/chat'
-        }})
+      console.log('user', user)
+      if (!user.isgroup) {
+        this.$router.push({path: '/chatroom',
+          query: {
+            friendname: user.fromname,
+            friendid: user.fromid,
+            friendheader: user.avatar,
+            frompath: '/chat',
+            isgroup: 0
+
+          }})
+      } else {
+        axios.post('/api/getGroupName', qs.stringify({groupid: user.tomsg}))
+          .then((res) => {
+            console.log(res)
+            this.$router.push({path: '/chatroom',
+              query: {
+                friendname: res.data,
+                friendid: user.tomsg,
+                friendheader: user.avatar,
+                frompath: '/chat',
+                isgroup: 1
+
+              }})
+          })
+      }
+
       // this.$store.commit('unshowToast')
     },
 
@@ -128,18 +156,11 @@ export default {
       console.log('app', a)
       axios.post('/api/MsgFrom', qs.stringify({fromid: a.frommsg}))
         .then((res) => {
-          console.log(res)
+          console.log('res-app:', res)
           this.$store.commit('setMsgToast', {res, a})
-          // this.newMsg.push({
-
-          //   fromname: res.data.fromname,
-          //   avatar: res.data.avatar,
-          //   msg: a.msg,
-          //   time: a.time,
-          //   text: parseInt(a.text),
-          //   fromid: a.frommsg
-          // })
           this.jsonmsg.fromid = a.frommsg
+          this.jsonmsg.isgroup = a.isgroup
+          this.jsonmsg.tomsg = a.tomsg
           this.jsonmsg.msg = a.msg
           this.jsonmsg.time = a.time
           this.jsonmsg.text = parseInt(a.text)
